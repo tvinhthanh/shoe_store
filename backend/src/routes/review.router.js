@@ -34,9 +34,15 @@ router.post("/", async (req, res) => {
 // Xóa review
 router.delete("/:id", async (req, res) => {
   try {
+    const review = await Reviews.getById(req.params.id);
+    if (!review) {
+      return res.status(404).json({ message: "Không tìm thấy đánh giá" });
+    }
+    
     await Reviews.delete(req.params.id);
     res.json({ message: "Xóa đánh giá thành công" });
   } catch (err) {
+    console.error("Delete review error:", err);
     res.status(500).json({ message: "Không xóa được" });
   }
 });

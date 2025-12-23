@@ -84,6 +84,14 @@ const Reviews = {
     return res;
   },
 
+  getById: async (id) => {
+    const [rows] = await db.execute(
+      "SELECT * FROM reviews WHERE id_review = ?",
+      [id]
+    );
+    return rows[0] || null;
+  },
+
   delete: async (idReview) => {
     const [res] = await db.execute("DELETE FROM reviews WHERE id_review = ?", [
       idReview,

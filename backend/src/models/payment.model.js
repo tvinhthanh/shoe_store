@@ -49,6 +49,29 @@ const Payments = {
     );
     return res;
   },
+
+  getById: async (id) => {
+    const [rows] = await db.execute(
+      "SELECT * FROM payments WHERE id_payment = ?",
+      [id]
+    );
+    return rows[0] || null;
+  },
+
+  getAll: async () => {
+    const [rows] = await db.execute(
+      "SELECT * FROM payments ORDER BY paid_at DESC"
+    );
+    return rows;
+  },
+
+  delete: async (id) => {
+    const [res] = await db.execute(
+      "DELETE FROM payments WHERE id_payment = ?",
+      [id]
+    );
+    return res;
+  },
 };
 
 module.exports = Payments;

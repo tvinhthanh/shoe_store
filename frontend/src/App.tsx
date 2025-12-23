@@ -37,6 +37,7 @@ import {
 import { CartProvider } from "./contexts/CartContext";
 import CartPage from "./pages/user/cart/Cart";
 import OrderListPage from "./pages/user/order/Order";
+import PaymentPage from "./pages/user/payment/Payment";
 
 const App = () => {
   const { isLoggedIn, userRole, isAuthLoading } = useAppContext();
@@ -71,6 +72,7 @@ const App = () => {
             <Route path="/login" element={<SignIn />} />
             <Route path="/product/:id" element={<ProductDetail />} />
             <Route path="/cart" element={<CartPage />} />
+            <Route path="/payment" element={<PaymentPage />} />
             <Route path="/mydonhang" element={<OrderListPage />} />
             <Route path="/terms-of-sale" element={<TermsOfSale />} />
             <Route path="/terms-of-use" element={<TermsOfUse />} />

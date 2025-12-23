@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { CartItem, cartService } from "../../../services/cart.service";
 import { useAppContext } from "../../../contexts/AppContext";
 import { useCart } from "../../../contexts/CartContext";
@@ -18,6 +19,7 @@ interface CartViewItem extends CartItem {
 }
 
 export default function CartPage() {
+    const navigate = useNavigate();
     const { showToast, userId } = useAppContext();
     const { items: cartItems, refresh } = useCart();
     const { formatVND } = useCurrency();
@@ -137,7 +139,12 @@ export default function CartPage() {
             cartService.clear();
             refresh();
 
-            showToast("Đặt hàng thành công!", "SUCCESS");
+            showToast("Đặt hàng thành công! Đang chuyển đến trang thanh toán...", "SUCCESS");
+            
+            // 4. CHUYỂN ĐẾN TRANG THANH TOÁN
+            setTimeout(() => {
+                navigate(`/payment?orderId=${id_order}`);
+            }, 1000);
         } catch (err) {
             console.error(err);
             showToast("Lỗi khi tạo đơn hàng", "ERROR");

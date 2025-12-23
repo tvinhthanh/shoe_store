@@ -13,7 +13,7 @@ class ReviewService extends ApiService {
         return this.get(`/product/${productId}`);
     }
 
-    remove(id: string) {
+    remove(id: number | string) {
         return this.delete(`/${id}`);
     }
 

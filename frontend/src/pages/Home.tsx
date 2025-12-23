@@ -8,9 +8,12 @@ import CategoryShowcase from "../components/CategoryShowcase";
 const Home: React.FC = () => {
   const { userId, setSearchTerm } = useAppContext();
   const [, setUserName] = useState<string>("");
-  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const searchTermFromUrl = searchParams.get("search") || "";
+  const categoryIdFromUrl = searchParams.get("category");
+  
+  // Lấy categoryId từ URL hoặc null
+  const selectedCategoryId = categoryIdFromUrl ? parseInt(categoryIdFromUrl) : null;
 
   useEffect(() => {
     if (userId) {
@@ -27,13 +30,17 @@ const Home: React.FC = () => {
   }, [searchTermFromUrl, setSearchTerm]);
 
   const handleCategoryClick = (categoryId: number | null) => {
-    setSelectedCategoryId(categoryId);
+    // Cập nhật URL với categoryId
+    if (categoryId) {
+      setSearchParams({ category: categoryId.toString() });
+    } else {
+      setSearchParams({});
+    }
     setSearchTerm(""); // Reset search khi chọn category
-    setSearchParams({}); // Xóa query param khi chọn category
   };
 
   return (
-    <div>
+    <div id="product-list-section">
       {/* TWO-COLUMN LAYOUT */}
       <div className="max-w-screen-2xl mx-auto px-6 pb-16 grid grid-cols-1 md:grid-cols-12 gap-10">
 

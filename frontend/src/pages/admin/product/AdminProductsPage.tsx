@@ -4,8 +4,12 @@ import Table, { Column } from "../../../components/Table";
 import ProductModal, { Product, ProductModalMode } from "./ProductModal";
 import { categoryService } from "../../../services/category.service";
 import { productService } from "../../../services/product.service";
+import { useCurrency } from "../../../hooks/useCurrency";
+import { useAppContext } from "../../../contexts/AppContext";
 
 const AdminProductsPage = () => {
+    const { formatVND } = useCurrency();
+    const { showToast } = useAppContext();
     const [data, setData] = useState<Product[]>([]);
     const [categories, setCategories] = useState<any[]>([]);
     const [open, setOpen] = useState(false);
@@ -53,10 +57,22 @@ const AdminProductsPage = () => {
 
         try {
             await productService.remove(id);
+            showToast("Xóa sản phẩm thành công", "SUCCESS");
             loadProducts();
-        } catch (err) {
-            console.error(err);
-            alert("Xoá thất bại");
+        } catch (err: any) {
+            console.error("Delete product error:", err);
+            // Xử lý lỗi an toàn, không để app crash
+            let errorMessage = "Không thể xóa sản phẩm này";
+            if (err && typeof err === 'object') {
+                if (err.message) {
+                    errorMessage = err.message;
+                } else if (err.error) {
+                    errorMessage = err.error;
+                }
+            } else if (typeof err === 'string') {
+                errorMessage = err;
+            }
+            showToast(errorMessage, "ERROR");
         }
     };
 
@@ -74,8 +90,23 @@ const AdminProductsPage = () => {
             ),
         },
         { title: "Tên", dataIndex: "name" },
+        {
+            title: "SKU + Giá",
+            width: 180,
+            render: (_, record) => (
+                <div>
+                    <div className="font-semibold text-sm">{record.sku}</div>
+                    <div className="text-red-600 font-bold text-sm">{formatVND(record.price)}</div>
+                </div>
+            )
+        },
         { title: "SKU", dataIndex: "sku" },
-        { title: "Giá", dataIndex: "price", width: 100 },
+        {
+            title: "Giá",
+            dataIndex: "price",
+            width: 120,
+            render: (v) => formatVND(v)
+        },
         { title: "Kho", dataIndex: "stock", width: 80 },
         {
             title: "Thao tác",

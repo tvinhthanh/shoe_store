@@ -48,9 +48,15 @@ router.put("/:id", async (req, res) => {
 // Xóa user
 router.delete("/:id", async (req, res) => {
   try {
+    const user = await Users.getById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: "Không tìm thấy user" });
+    }
+    
     await Users.delete(req.params.id);
     res.json({ message: "Xóa user thành công" });
   } catch (err) {
+    console.error("Delete user error:", err);
     res.status(500).json({ message: "Không xóa được user" });
   }
 });

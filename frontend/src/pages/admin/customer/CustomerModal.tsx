@@ -47,7 +47,10 @@ const CustomerModal: React.FC<CustomerModalProps> = ({
     if (roleValue !== "user") return null;
 
     const handleDelete = async () => {
-        if (!data.id_user) return;
+        if (!data.id_user) {
+            showToast("Không tìm thấy ID người dùng", "ERROR");
+            return;
+        }
 
         if (!window.confirm("Bạn có chắc muốn xóa người dùng này?")) return;
 
@@ -57,8 +60,20 @@ const CustomerModal: React.FC<CustomerModalProps> = ({
 
             onClose();
             onDeleted && onDeleted();
-        } catch (err) {
-            showToast("Không thể xóa người dùng", "ERROR");
+        } catch (err: any) {
+            console.error("Delete user error:", err);
+            // Xử lý lỗi an toàn, không để app crash
+            let errorMessage = "Không thể xóa người dùng";
+            if (err && typeof err === 'object') {
+                if (err.message) {
+                    errorMessage = err.message;
+                } else if (err.error) {
+                    errorMessage = err.error;
+                }
+            } else if (typeof err === 'string') {
+                errorMessage = err;
+            }
+            showToast(errorMessage, "ERROR");
         }
     };
 

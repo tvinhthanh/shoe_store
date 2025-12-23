@@ -105,6 +105,15 @@ const ProductVariants = {
   );
 
   return total;
+  },
+
+  // Kiểm tra variant có đang được sử dụng trong order_items không
+  hasOrderItems: async (id) => {
+    const [rows] = await db.execute(
+      "SELECT COUNT(*) as count FROM order_items WHERE id_variant = ?",
+      [id]
+    );
+    return rows[0].count > 0;
   } 
 
 };

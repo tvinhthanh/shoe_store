@@ -74,6 +74,14 @@ router.delete("/:id", async (req, res) => {
       return res.status(404).json({ message: "Không tìm thấy biến thể" });
     }
 
+    // Kiểm tra xem variant có đang được sử dụng trong đơn hàng không
+    const hasOrderItems = await Variants.hasOrderItems(req.params.id);
+    if (hasOrderItems) {
+      return res.status(400).json({
+        message: "Không thể xóa biến thể này vì đã có đơn hàng sử dụng biến thể này",
+      });
+    }
+
     const productId = variant.id_product;
     await Variants.delete(req.params.id);
     
@@ -82,6 +90,13 @@ router.delete("/:id", async (req, res) => {
     
     res.json({ message: "Xóa biến thể thành công" });
   } catch (err) {
+    console.error("Delete variant error:", err);
+    // Kiểm tra lỗi foreign key constraint
+    if (err.code === 'ER_ROW_IS_REFERENCED_2' || err.errno === 1451) {
+      return res.status(400).json({
+        message: "Không thể xóa biến thể này vì đang được sử dụng trong hệ thống",
+      });
+    }
     res.status(500).json({ message: "Không xóa được" });
   }
 });

@@ -2,8 +2,10 @@ import React, { useState } from "react";
 import Table, { Column } from "../../../components/Table";
 import CategoryModal, { Category, CategoryModalMode } from "./CategoryModal";
 import { categoryService } from "../../../services/category.service";
+import { useAppContext } from "../../../contexts/AppContext";
 
 const AdminCategoriesPage = () => {
+    const { showToast } = useAppContext();
     const [data, setData] = useState<Category[]>([]);
     const [open, setOpen] = useState(false);
     const [mode, setMode] = useState<CategoryModalMode>("create");
@@ -26,9 +28,22 @@ const AdminCategoriesPage = () => {
         if (!confirm("Bạn có chắc chắn muốn xóa?")) return;
         try {
             await categoryService.deleteCategory(id);
+            showToast("Xóa danh mục thành công", "SUCCESS");
             fetchData();
-        } catch (error) {
+        } catch (error: any) {
             console.error("Failed to delete category", error);
+            // Xử lý lỗi an toàn, không để app crash
+            let errorMessage = "Không thể xóa danh mục này";
+            if (error && typeof error === 'object') {
+                if (error.message) {
+                    errorMessage = error.message;
+                } else if (error.error) {
+                    errorMessage = error.error;
+                }
+            } else if (typeof error === 'string') {
+                errorMessage = error;
+            }
+            showToast(errorMessage, "ERROR");
         }
     };
 

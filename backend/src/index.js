@@ -28,6 +28,7 @@ app.use("/api/order-items", require("./routes/orderitem.router"));
 app.use("/api/payments", require("./routes/payment.router"));
 app.use("/api/reviews", require("./routes/review.router"));
 app.use("/api/upload", require("./routes/upload.router"));
+app.use("/api/stats", require("./routes/stats.router"));
 
 
 // SERVER RUN

@@ -141,7 +141,7 @@ const OrderModal: React.FC<OrderModalProps> = ({
                             <table className="w-full text-sm border">
                                 <thead className="bg-gray-100">
                                     <tr>
-                                        <th className="border p-2">SP</th>
+                                        <th className="border p-2">Sản phẩm</th>
                                         <th className="border p-2">Biến thể</th>
                                         <th className="border p-2">SL</th>
                                         <th className="border p-2">Giá</th>
@@ -151,13 +151,48 @@ const OrderModal: React.FC<OrderModalProps> = ({
                                 <tbody>
                                     {items.map((it) => (
                                         <tr key={it.id_order_item}>
-                                            <td className="border p-2">{it.id_product}</td>
-                                            <td className="border p-2">{it.id_variant || "—"}</td>
-                                            <td className="border p-2">{it.quantity}</td>
+                                            <td className="border p-2">
+                                                <div className="flex items-center gap-2">
+                                                    {it.product_image && (
+                                                        <img
+                                                            src={it.product_image}
+                                                            alt={it.product_name || "Sản phẩm"}
+                                                            className="w-10 h-10 object-cover rounded"
+                                                        />
+                                                    )}
+                                                    <div>
+                                                        <div className="font-semibold">
+                                                            {it.product_name || `SP #${it.id_product}`}
+                                                        </div>
+                                                        {!it.product_name && (
+                                                            <div className="text-xs text-gray-500">
+                                                                ID: {it.id_product}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="border p-2">
+                                                {it.variant_color || it.variant_size ? (
+                                                    <div>
+                                                        {it.variant_color && (
+                                                            <div>Màu: <span className="font-semibold">{it.variant_color}</span></div>
+                                                        )}
+                                                        {it.variant_size && (
+                                                            <div>Size: <span className="font-semibold">{it.variant_size}</span></div>
+                                                        )}
+                                                    </div>
+                                                ) : it.id_variant ? (
+                                                    <span className="text-gray-500">ID: {it.id_variant}</span>
+                                                ) : (
+                                                    <span className="text-gray-400">—</span>
+                                                )}
+                                            </td>
+                                            <td className="border p-2 text-center">{it.quantity}</td>
                                             <td className="border p-2">
                                                 {formatVND(it.unit_price)}
                                             </td>
-                                            <td className="border p-2">
+                                            <td className="border p-2 font-semibold">
                                                 {formatVND(it.total_price)}
                                             </td>
                                         </tr>

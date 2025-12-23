@@ -22,7 +22,24 @@ const ProductVariants = require("./productVariant.model");
 const OrderItems = {
   getByOrder: async (orderId) => {
     const [rows] = await db.execute(
-      "SELECT * FROM order_items WHERE id_order = ?",
+      `
+      SELECT 
+        oi.id_order_item,
+        oi.id_product,
+        p.name AS product_name,
+        p.image AS product_image,
+        oi.id_variant,
+        v.color AS variant_color,
+        v.size AS variant_size,
+        oi.quantity,
+        oi.unit_price,
+        oi.total_price
+      FROM order_items oi
+      LEFT JOIN products p ON oi.id_product = p.id_product
+      LEFT JOIN product_variants v ON oi.id_variant = v.id_variant
+      WHERE oi.id_order = ?
+      ORDER BY oi.id_order_item
+      `,
       [orderId]
     );
     return rows;

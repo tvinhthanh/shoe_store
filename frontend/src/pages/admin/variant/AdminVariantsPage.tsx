@@ -4,8 +4,12 @@ import Table, { Column } from "../../../components/Table";
 import VariantModal, { Variant, VariantModalMode } from "./VariantModal";
 import { variantService } from "../../../services/variant.service";
 import { productService } from "../../../services/product.service";
+import { useCurrency } from "../../../hooks/useCurrency";
+import { useAppContext } from "../../../contexts/AppContext";
 
 const AdminVariantsPage = () => {
+    const { formatVND } = useCurrency();
+    const { showToast } = useAppContext();
     const [data, setData] = useState<Variant[]>([]);
     const [products, setProducts] = useState<any[]>([]);
     const [open, setOpen] = useState(false);
@@ -54,7 +58,7 @@ const AdminVariantsPage = () => {
             title: "Giá",
             dataIndex: "price_variant",
             width: 120,
-            render: (v) => Number(v).toLocaleString("vi-VN") + " ₫"
+            render: (v) => formatVND(v)
         },
         { title: "Kho", dataIndex: "stock", width: 80 },
         {
@@ -87,8 +91,29 @@ const AdminVariantsPage = () => {
                     <button
                         onClick={async () => {
                             if (!window.confirm("Xóa biến thể này?")) return;
-                            await variantService.remove(record.id_variant!);
-                            loadData();
+                            if (!record.id_variant) {
+                                showToast("Không tìm thấy ID biến thể", "ERROR");
+                                return;
+                            }
+                            try {
+                                await variantService.remove(record.id_variant);
+                                showToast("Xóa biến thể thành công", "SUCCESS");
+                                loadData();
+                            } catch (err: any) {
+                                console.error("Delete variant error:", err);
+                                // Xử lý lỗi an toàn, không để app crash
+                                let errorMessage = "Không thể xóa biến thể này";
+                                if (err && typeof err === 'object') {
+                                    if (err.message) {
+                                        errorMessage = err.message;
+                                    } else if (err.error) {
+                                        errorMessage = err.error;
+                                    }
+                                } else if (typeof err === 'string') {
+                                    errorMessage = err;
+                                }
+                                showToast(errorMessage, "ERROR");
+                            }
                         }}
                         className="bg-red-500 text-white px-2 py-1 rounded text-xs"
                     >

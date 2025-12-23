@@ -97,8 +97,40 @@ router.put("/:id", upload.single("image"), async (req, res) => {
 
 // DELETE
 router.delete("/:id", async (req, res) => {
+  try {
+    const product = await Products.getById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ message: "Không tìm thấy sản phẩm" });
+    }
+    
+    // Kiểm tra xem sản phẩm có đang được sử dụng trong đơn hàng không
+    const hasOrderItems = await Products.hasOrderItems(req.params.id);
+    if (hasOrderItems) {
+      return res.status(400).json({
+        message: "Không thể xóa sản phẩm này vì đã có đơn hàng sử dụng sản phẩm này",
+      });
+    }
+    
+    // Kiểm tra xem sản phẩm có biến thể không
+    const hasVariants = await Products.hasVariants(req.params.id);
+    if (hasVariants) {
+      return res.status(400).json({
+        message: "Không thể xóa sản phẩm này vì còn biến thể. Vui lòng xóa tất cả biến thể trước.",
+      });
+    }
+    
   await Products.delete(req.params.id);
-  res.json({ message: "Product deleted" });
+    res.json({ message: "Xóa sản phẩm thành công" });
+  } catch (err) {
+    console.error("Delete product error:", err);
+    // Kiểm tra lỗi foreign key constraint
+    if (err.code === 'ER_ROW_IS_REFERENCED_2' || err.errno === 1451) {
+      return res.status(400).json({
+        message: "Không thể xóa sản phẩm này vì đang được sử dụng trong hệ thống",
+      });
+    }
+    res.status(500).json({ message: "Không xóa được sản phẩm" });
+  }
 });
 
 module.exports = router;

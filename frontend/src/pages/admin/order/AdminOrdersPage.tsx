@@ -3,8 +3,10 @@ import Table, { Column } from "../../../components/Table";
 import OrderModal, { Order, OrderModalMode } from "./OrderModal";
 import { orderService } from "../../../services/order.service";
 import { useCurrency } from "../../../hooks/useCurrency";
+import { useAppContext } from "../../../contexts/AppContext";
 
 const AdminOrdersPage = () => {
+    const { showToast } = useAppContext();
     const [data, setData] = useState<Order[]>([]);
     const [open, setOpen] = useState(false);
     const [mode, setMode] = useState<OrderModalMode>("view");
@@ -26,17 +28,42 @@ const AdminOrdersPage = () => {
         if (!selected?.id_order || !payload.status) return;
         try {
             await orderService.updateStatus(selected.id_order, payload.status);
+            showToast("Cập nhật trạng thái đơn hàng thành công", "SUCCESS");
             setOpen(false);
             loadOrders();
-        } catch (err) {
+        } catch (err: any) {
             console.error("Update status error:", err);
-            alert("Không cập nhật được trạng thái đơn hàng");
+            const errorMessage = err.message || "Không cập nhật được trạng thái đơn hàng";
+            showToast(errorMessage, "ERROR");
+        }
+    };
+
+    const handleDelete = async (id: number) => {
+        if (!window.confirm("Bạn có chắc muốn xóa đơn hàng này không?")) return;
+        try {
+            await orderService.remove(id);
+            showToast("Xóa đơn hàng thành công", "SUCCESS");
+            loadOrders();
+        } catch (err: any) {
+            console.error("Delete order error:", err);
+            // Xử lý lỗi an toàn, không để app crash
+            let errorMessage = "Không thể xóa đơn hàng này";
+            if (err && typeof err === 'object') {
+                if (err.message) {
+                    errorMessage = err.message;
+                } else if (err.error) {
+                    errorMessage = err.error;
+                }
+            } else if (typeof err === 'string') {
+                errorMessage = err;
+            }
+            showToast(errorMessage, "ERROR");
         }
     };
 
     const columns: Column<Order>[] = [
         { title: "ID", dataIndex: "id_order", width: 60 },
-        { title: "Mã đơn", dataIndex: "order_code" },
+        { title: "Mã đơn", dataIndex: "order_code", width: 150 },
         { title: "Khách hàng", dataIndex: "customer_name", width: 140 },
         {
             title: "Tổng tiền",
@@ -80,6 +107,14 @@ const AdminOrdersPage = () => {
                         >
                             Sửa trạng thái
                 </button>
+                    )}
+                    {record.status !== "completed" && record.status !== "cancelled" && (
+                        <button
+                            onClick={() => handleDelete(record.id_order!)}
+                            className="bg-red-500 text-white px-2 py-1 text-xs rounded"
+                        >
+                            Xóa
+                        </button>
                     )}
                 </div>
             ),

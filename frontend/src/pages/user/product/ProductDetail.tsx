@@ -198,16 +198,30 @@ export default function ProductDetail() {
                     <div className="mb-5">
                         <h3 className="font-medium mb-2">Màu sắc</h3>
                         <div className="flex gap-2 flex-wrap">
-                            {colors.map((color) => (
-                                <button
-                                    key={color}
-                                    onClick={() => setSelectedColor(color)}
-                                    className={`px-4 py-2 rounded border text-sm ${selectedColor === color ? "bg-black text-white" : "bg-white"
+                            {colors.map((color) => {
+                                // Kiểm tra xem có variant nào của màu này còn hàng không
+                                const hasStock = variants.some(
+                                    (v) => v.color === color && v.stock > 0
+                                );
+                                return (
+                                    <button
+                                        key={color}
+                                        onClick={() => setSelectedColor(color)}
+                                        disabled={!hasStock}
+                                        className={`px-4 py-2 rounded border text-sm ${
+                                            selectedColor === color 
+                                                ? "bg-black text-white" 
+                                                : hasStock
+                                                ? "bg-white hover:bg-gray-50"
+                                                : "bg-gray-200 text-gray-400 cursor-not-allowed"
                                         }`}
-                                >
-                                    {color}
-                                </button>
-                            ))}
+                                        title={!hasStock ? "Màu này đã hết hàng" : ""}
+                                    >
+                                        {color}
+                                        {!hasStock && " (Hết hàng)"}
+                                    </button>
+                                );
+                            })}
                         </div>
                     </div>
 
@@ -215,25 +229,58 @@ export default function ProductDetail() {
                     <div className="mb-5">
                         <h3 className="font-medium mb-2">Size</h3>
                         <div className="flex gap-2 flex-wrap">
-                            {sizes.map((size) => (
-                                <button
-                                    key={size}
-                                    onClick={() => setSelectedSize(String(size))}
-                                    className={`px-4 py-2 rounded border text-sm ${selectedSize === size ? "bg-black text-white" : "bg-white"
+                            {sizes.map((size) => {
+                                // Kiểm tra xem có variant nào của size này với màu đã chọn còn hàng không
+                                const hasStock = selectedColor
+                                    ? variants.some(
+                                          (v) =>
+                                              v.color === selectedColor &&
+                                              String(v.size) === String(size) &&
+                                              v.stock > 0
+                                      )
+                                    : variants.some(
+                                          (v) =>
+                                              String(v.size) === String(size) &&
+                                              v.stock > 0
+                                      );
+                                return (
+                                    <button
+                                        key={size}
+                                        onClick={() => setSelectedSize(String(size))}
+                                        disabled={!hasStock}
+                                        className={`px-4 py-2 rounded border text-sm ${
+                                            selectedSize === size
+                                                ? "bg-black text-white"
+                                                : hasStock
+                                                ? "bg-white hover:bg-gray-50"
+                                                : "bg-gray-200 text-gray-400 cursor-not-allowed"
                                         }`}
-                                >
-                                    {size}
-                                </button>
-                            ))}
+                                        title={!hasStock ? "Size này đã hết hàng" : ""}
+                                    >
+                                        {size}
+                                        {!hasStock && " (Hết hàng)"}
+                                    </button>
+                                );
+                            })}
                         </div>
                     </div>
 
+                    {activeVariant && activeVariant.stock <= 0 && (
+                        <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+                            ⚠️ Biến thể này đã hết hàng
+                        </div>
+                    )}
+
                     <button
                         onClick={addToCart}
-                        disabled={!activeVariant}
-                        className="bg-blue-600 text-white px-5 py-3 rounded-lg shadow mt-4 disabled:bg-gray-300"
+                        disabled={!activeVariant || (activeVariant && activeVariant.stock <= 0)}
+                        className="bg-blue-600 text-white px-5 py-3 rounded-lg shadow mt-4 disabled:bg-gray-300 disabled:cursor-not-allowed"
                     >
-                        Thêm vào giỏ
+                        {!activeVariant
+                            ? "Vui lòng chọn màu và size"
+                            : activeVariant.stock <= 0
+                            ? "Đã hết hàng"
+                            : "Thêm vào giỏ"}
                     </button>
 
                     <div className="mt-8">
@@ -342,3 +389,4 @@ export default function ProductDetail() {
         </div>
     );
 }
+

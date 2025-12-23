@@ -73,9 +73,22 @@ router.put("/:id/status", async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
   try {
+    const order = await Orders.getById(req.params.id);
+    if (!order) {
+      return res.status(404).json({ message: "Không tìm thấy đơn hàng" });
+    }
+    
+    // Không cho phép xóa đơn đã completed hoặc cancelled
+    if (order.status === "completed" || order.status === "cancelled") {
+      return res.status(400).json({
+        message: "Không thể xóa đơn hàng đã hoàn thành hoặc đã hủy",
+      });
+    }
+    
     await Orders.remove(req.params.id);
     res.json({ message: "Xóa đơn hàng thành công" });
   } catch (err) {
+    console.error("Delete order error:", err);
     res.status(500).json({ message: "Không xóa được đơn" });
   }
 });
